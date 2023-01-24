@@ -157,7 +157,27 @@ namespace MediaManager.Platforms.Android.Player
             DashChunkSourceFactory = new DefaultDashChunkSource.Factory(DataSourceFactory);
             SsChunkSourceFactory = new DefaultSsChunkSource.Factory(DataSourceFactory);
 
-            Player = new SimpleExoPlayer.Builder(Context).Build();
+            // Improve buffering based on https://stackoverflow.com/questions/42643590/exoplayer-how-to-load-bigger-parts-of-remote-audio-files
+            var bandwidthMeter = new DefaultBandwidthMeter.Builder(Context).Build();
+
+            var loadControl = new DefaultLoadControl.Builder()
+                .SetAllocator(new DefaultAllocator(true, C.DefaultBufferSegmentSize))
+                .SetBufferDurationsMs(
+                    MediaManager.LoadControlSettings.MinBufferMs,
+                    MediaManager.LoadControlSettings.MaxBufferMs,
+                    
+                    MediaManager.LoadControlSettings.DefaultBufferForPlaybackMs, // buffer for playback
+                    MediaManager.LoadControlSettings.DefaultBufferForPlaybackAfterRebufferMs // buffer for playback affer rebuffer
+                )
+                .SetTargetBufferBytes(MediaManager.LoadControlSettings.TargetBufferBytes)
+                .SetPrioritizeTimeOverSizeThresholds(MediaManager.LoadControlSettings.PrioritizeTimeOverSizeTresholds)
+                
+                .Build();
+            
+            Player = new SimpleExoPlayer.Builder(Context)
+                .SetLoadControl(loadControl)
+                .SetBandwidthMeter(bandwidthMeter)
+                .Build();
             //Player.VideoSizeChanged += Player_VideoSizeChanged;
 
             var audioAttributes = new Com.Google.Android.Exoplayer2.Audio.AudioAttributes.Builder()
