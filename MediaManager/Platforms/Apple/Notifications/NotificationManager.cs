@@ -154,9 +154,7 @@ namespace MediaManager.Platforms.Apple.Notifications
             }
 
 #if __IOS__ || __TVOS__
-            var cover = mediaItem.DisplayImage as UIKit.UIImage;
-
-            if (cover != null)
+            if (mediaItem.DisplayImage is UIKit.UIImage cover)
             {
                 //TODO: Why is this deprecated?
                 nowPlayingInfo.Artwork = new MPMediaItemArtwork(cover);
@@ -223,7 +221,7 @@ namespace MediaManager.Platforms.Apple.Notifications
 
         protected virtual MPRemoteCommandHandlerStatus PlaybackPositionCommand(MPRemoteCommandEvent arg)
         {
-            if (!(arg is MPChangePlaybackPositionCommandEvent e))
+            if (arg is not MPChangePlaybackPositionCommandEvent e)
             {
                 return MPRemoteCommandHandlerStatus.CommandFailed;
             }
