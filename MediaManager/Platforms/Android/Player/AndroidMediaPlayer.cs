@@ -179,13 +179,6 @@ namespace MediaManager.Platforms.Android.Player
             {
                 OnPlayerErrorImpl = (ExoPlaybackException exception) =>
                 {
-                    switch (exception.Type)
-                    {
-                        case ExoPlaybackException.TypeRenderer:
-                        case ExoPlaybackException.TypeSource:
-                        case ExoPlaybackException.TypeUnexpected:
-                            break;
-                    }
                     MediaManager.OnMediaItemFailed(this, new MediaItemFailedEventArgs(MediaManager.Queue.Current, exception, exception.Message));
                 },
                 OnTracksChangedImpl = (trackGroups, trackSelections) =>
