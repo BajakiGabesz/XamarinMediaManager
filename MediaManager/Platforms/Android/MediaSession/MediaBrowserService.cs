@@ -147,6 +147,16 @@ namespace MediaManager.Platforms.Android.MediaSession
                 }
             };
 
+            PlayerNotificationManager = new Com.Google.Android.Exoplayer2.UI.PlayerNotificationManager.Builder(
+            	this,
+            	ForegroundNotificationId,
+            	ChannelId,
+            	MediaDescriptionAdapter)
+                .SetChannelNameResourceId(Resource.String.XamarinMediaManagerName)
+                .SetChannelDescriptionResourceId(Resource.String.XamarinMediaManagerDescription)
+                .SetNotificationListener(NotificationListener)
+                .Build();
+
             //PlayerNotificationManager.SetFastForwardIncrementMs((long)MediaManager.StepSizeForward.TotalMilliseconds);
             //PlayerNotificationManager.SetRewindIncrementMs((long)MediaManager.StepSizeBackward.TotalMilliseconds);
 
