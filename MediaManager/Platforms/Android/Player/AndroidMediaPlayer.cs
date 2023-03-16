@@ -175,10 +175,8 @@ namespace MediaManager.Platforms.Android.Player
             Player.SetHandleAudioBecomingNoisy(true);
             Player.SetWakeMode(C.WakeModeNetwork);
 
-            PlayerEventListener = new PlayerEventListener();
-            /*
+            PlayerEventListener = new PlayerEventListener()
             {
-                
                 OnPlayerErrorImpl = (ExoPlaybackException exception) =>
                 {
                     switch (exception.Type)
@@ -249,7 +247,7 @@ namespace MediaManager.Platforms.Android.Player
                 {
                     //TODO: Maybe call event
                 }
-            };*/
+            };
             Player.AddListener(PlayerEventListener);
 
             ConnectMediaSession();
