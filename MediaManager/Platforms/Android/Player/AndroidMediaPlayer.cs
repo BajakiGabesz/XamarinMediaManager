@@ -30,7 +30,7 @@ namespace MediaManager.Platforms.Android.Player
         protected MediaSessionCompat MediaSession => MediaManager.MediaSession;
 
         protected string UserAgent { get; set; }
-        protected DefaultHttpDataSourceFactory HttpDataSourceFactory { get; set; }
+        protected DefaultHttpDataSource.Factory HttpDataSourceFactory { get; set; }
         public IDataSource.IFactory DataSourceFactory { get; set; }
         public DefaultDashChunkSource.Factory DashChunkSourceFactory { get; set; }
         public DefaultSsChunkSource.Factory SsChunkSourceFactory { get; set; }
@@ -154,7 +154,7 @@ namespace MediaManager.Platforms.Android.Player
             else
                 UserAgent = Util.GetUserAgent(Context, Context.PackageName);
 
-            HttpDataSourceFactory = new DefaultHttpDataSourceFactory(UserAgent);
+            HttpDataSourceFactory = new DefaultHttpDataSource.Factory().SetUserAgent(UserAgent);
             UpdateRequestHeaders();
 
             MediaSource = new ConcatenatingMediaSource();
@@ -175,8 +175,10 @@ namespace MediaManager.Platforms.Android.Player
             Player.SetHandleAudioBecomingNoisy(true);
             Player.SetWakeMode(C.WakeModeNetwork);
 
-            PlayerEventListener = new PlayerEventListener()
+            PlayerEventListener = new PlayerEventListener();
+            /*
             {
+                
                 OnPlayerErrorImpl = (ExoPlaybackException exception) =>
                 {
                     switch (exception.Type)
@@ -247,7 +249,7 @@ namespace MediaManager.Platforms.Android.Player
                 {
                     //TODO: Maybe call event
                 }
-            };
+            };*/
             Player.AddListener(PlayerEventListener);
 
             ConnectMediaSession();
@@ -268,10 +270,7 @@ namespace MediaManager.Platforms.Android.Player
         {
             if (RequestHeaders?.Count > 0)
             {
-                foreach (var item in RequestHeaders)
-                {
-                    HttpDataSourceFactory?.DefaultRequestProperties.Set(item.Key, item.Value);
-                }
+                HttpDataSourceFactory?.SetDefaultRequestProperties(RequestHeaders);
             }
         }
 
