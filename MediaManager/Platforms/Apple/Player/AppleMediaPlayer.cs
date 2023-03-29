@@ -94,6 +94,7 @@ namespace MediaManager.Platforms.Apple.Player
                         MediaManager.Queue.Current.Title = split.LastOrDefault();
                     }
                 }
+                //TODO: Maybe add sending notification here.
             }
         }
 

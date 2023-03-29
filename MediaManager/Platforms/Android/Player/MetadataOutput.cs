@@ -1,5 +1,9 @@
-﻿using Android.Runtime;
+﻿using System;
+using Android.Runtime;
 using Com.Google.Android.Exoplayer2.Metadata;
+using Com.Google.Android.Exoplayer2.Metadata.Icy;
+using Com.Google.Android.Exoplayer2.Util;
+using static Android.Icu.Text.CaseMap;
 
 namespace MediaManager.Platforms.Android.Player
 {
@@ -13,9 +17,9 @@ namespace MediaManager.Platforms.Android.Player
         {
         }
 
-        public void OnMetadata(Metadata metadata)
+        public void OnMetadata(Metadata p0)
         {
-
+            //TODO: Check it is needed here or not.
         }
     }
 }

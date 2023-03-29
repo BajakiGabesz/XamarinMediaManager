@@ -1,5 +1,7 @@
 ﻿using Android.Runtime;
 using Com.Google.Android.Exoplayer2;
+using Com.Google.Android.Exoplayer2.Metadata.Icy;
+using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Source;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using static Com.Google.Android.Exoplayer2.IPlayer;
@@ -28,6 +30,7 @@ namespace MediaManager.Platforms.Android.Player
         public Action<Timeline, int> OnTimelineChangedImpl { get; set; }
         public Action<bool> OnIsPlayingChangedImpl { get; set; }
         public Action<int> OnPlaybackSuppressionReasonChangedImpl { get; set; }
+        public Action<Metadata> OnMetadataChangedImpl { get; set; }
 
         public void OnTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections)
         {
@@ -143,5 +146,11 @@ namespace MediaManager.Platforms.Android.Player
         {
             OnPlaybackSuppressionReasonChangedImpl?.Invoke(playbackSuppressionReason);
         }
+
+        public void OnMetadata(Metadata p0)
+        {
+            OnMetadataChangedImpl?.Invoke(p0);
+        }
     }
+}
 }

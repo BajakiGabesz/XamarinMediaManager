@@ -4,6 +4,8 @@ using Android.Graphics.Drawables;
 using Android.Support.V4.Media.Session;
 using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Ext.Mediasession;
+using Com.Google.Android.Exoplayer2.Metadata;
+using Com.Google.Android.Exoplayer2.Metadata.Icy;
 using Com.Google.Android.Exoplayer2.Source;
 using Com.Google.Android.Exoplayer2.Source.Dash;
 using Com.Google.Android.Exoplayer2.Source.Smoothstreaming;
@@ -253,6 +255,38 @@ namespace MediaManager.Platforms.Android.Player
                 OnPlaybackSuppressionReasonChangedImpl = (int playbackSuppressionReason) =>
                 {
                     //TODO: Maybe call event
+                }
+                OnMetadataChangedImpl = (Metadata metadata) =>
+                {
+                    for (var i = 0; i < p0.Length(); i++)
+                    {
+                        using (var entry = p0.Get(i))
+                        {
+                            switch (entry)
+                            {
+                                case IcyHeaders icyHeaders:
+                                    //TODO: Change it to the variant of XamarinMediaManager.
+                                    return PlaybackMetadata("icy-headers", title = icyHeaders.Name, url = icyHeaders.Url, genre = icyHeaders.Genre);
+                                case IcyInfo icyInfo:
+                                    string? artist;
+                                    string? title;
+                                    int index = icyInfo.Title == null ? -1 : icyInfo.Title.IndexOf(" - ", StringComparison.InvariantCultureIgnoreCase);
+                                    if (index != -1)
+                                    {
+                                        artist = icyInfo.Title?.Substring(0, index);
+                                        title = icyInfo.Title?.Substring(index + 3);
+                                    }
+                                    else
+                                    {
+                                        artist = null;
+                                        title = icyInfo.Title;
+                                    }
+
+                                    //TODO: Change it to the variant of XamarinMediaManager.
+                                    return PlaybackMetadata("icy", title = title, url = entry.url, artist = artist);
+                            }
+                        }
+                    }
                 }
             };
             Player.AddListener(PlayerEventListener);
