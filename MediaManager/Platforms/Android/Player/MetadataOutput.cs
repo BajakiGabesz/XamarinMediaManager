@@ -9,6 +9,8 @@ namespace MediaManager.Platforms.Android.Player
 {
     public class MetadataOutput : Java.Lang.Object, IMetadataOutput
     {
+        public Action<Metadata> OnMetadataImpl { get; set; }
+
         public MetadataOutput()
         {
         }
@@ -19,7 +21,7 @@ namespace MediaManager.Platforms.Android.Player
 
         public void OnMetadata(Metadata p0)
         {
-            //TODO: Check it is needed here or not.
+            OnMetadataImpl?.Invoke(p0);
         }
     }
 }

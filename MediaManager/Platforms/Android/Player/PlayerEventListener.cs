@@ -153,4 +153,3 @@ namespace MediaManager.Platforms.Android.Player
         }
     }
 }
-}

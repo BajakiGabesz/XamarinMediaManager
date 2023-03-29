@@ -49,6 +49,7 @@ namespace MediaManager.Platforms.Android.Player
         protected TimelineQueueEditor TimelineQueueEditor { get; set; }
         protected MediaSessionConnectorPlaybackPreparer PlaybackPreparer { get; set; }
         public PlayerEventListener PlayerEventListener { get; set; }
+        public MetadataOutput MetadataOutput { get; set; }
         protected RatingCallback RatingCallback { get; set; }
 
         private SimpleExoPlayer _player;
@@ -191,6 +192,13 @@ namespace MediaManager.Platforms.Android.Player
             Player.SetHandleAudioBecomingNoisy(true);
             Player.SetWakeMode(C.WakeModeNetwork);
 
+            MetadataOutput = new MetadataOutput()
+            {
+                OnMetadataImpl = (Metadata metadata) => ProcessMetadata(metadata)
+            };
+
+            Player.AddMetadataOutput(MetadataOutput);
+
             PlayerEventListener = new PlayerEventListener()
             {
                 OnPlayerErrorImpl = (ExoPlaybackException exception) =>
@@ -234,7 +242,7 @@ namespace MediaManager.Platforms.Android.Player
                             break;
                         case Com.Google.Android.Exoplayer2.Player.DiscontinuityReasonAutoTransition:
                             var currentWindowIndex = Player.CurrentWindowIndex;
-                            if (SetProperty(ref lastWindowIndex, currentWindowIndex))
+                            if (base.SetProperty(ref lastWindowIndex, currentWindowIndex))
                             {
                                 MediaManager.OnMediaItemFinished(this, new MediaItemEventArgs(MediaManager.Queue.Current));
                             }
@@ -255,38 +263,10 @@ namespace MediaManager.Platforms.Android.Player
                 OnPlaybackSuppressionReasonChangedImpl = (int playbackSuppressionReason) =>
                 {
                     //TODO: Maybe call event
-                }
+                },
                 OnMetadataChangedImpl = (Metadata metadata) =>
                 {
-                    for (var i = 0; i < p0.Length(); i++)
-                    {
-                        using (var entry = p0.Get(i))
-                        {
-                            switch (entry)
-                            {
-                                case IcyHeaders icyHeaders:
-                                    //TODO: Change it to the variant of XamarinMediaManager.
-                                    return PlaybackMetadata("icy-headers", title = icyHeaders.Name, url = icyHeaders.Url, genre = icyHeaders.Genre);
-                                case IcyInfo icyInfo:
-                                    string? artist;
-                                    string? title;
-                                    int index = icyInfo.Title == null ? -1 : icyInfo.Title.IndexOf(" - ", StringComparison.InvariantCultureIgnoreCase);
-                                    if (index != -1)
-                                    {
-                                        artist = icyInfo.Title?.Substring(0, index);
-                                        title = icyInfo.Title?.Substring(index + 3);
-                                    }
-                                    else
-                                    {
-                                        artist = null;
-                                        title = icyInfo.Title;
-                                    }
-
-                                    //TODO: Change it to the variant of XamarinMediaManager.
-                                    return PlaybackMetadata("icy", title = title, url = entry.url, artist = artist);
-                            }
-                        }
-                    }
+                    ProcessMetadata(metadata);
                 }
             };
             Player.AddListener(PlayerEventListener);
@@ -296,6 +276,43 @@ namespace MediaManager.Platforms.Android.Player
             if (PlayerView != null && PlayerView.Player == null)
             {
                 PlayerView.Player = Player;
+            }
+        }
+
+        private static void ProcessMetadata(Metadata metadata)
+        {
+            for (var i = 0; i < metadata.Length(); i++)
+            {
+                using (var entry = metadata.Get(i))
+                {
+                    switch (entry)
+                    {
+                        case IcyHeaders icyHeaders:
+                            Console.WriteLine($"Icy-Headers: {icyHeaders.Name} {icyHeaders.Url} {icyHeaders.Genre}");
+                            //TODO: Change it to the variant of XamarinMediaManager.
+                            //return PlaybackMetadata("icy-headers", title = icyHeaders.Name, url = icyHeaders.Url, genre = icyHeaders.Genre);
+                            break;
+                        case IcyInfo icyInfo:
+                            string? artist;
+                            string? title;
+                            int index = icyInfo.Title == null ? -1 : icyInfo.Title.IndexOf(" - ", StringComparison.InvariantCultureIgnoreCase);
+                            if (index != -1)
+                            {
+                                artist = icyInfo.Title?.Substring(0, index);
+                                title = icyInfo.Title?.Substring(index + 3);
+                            }
+                            else
+                            {
+                                artist = null;
+                                title = icyInfo.Title;
+                            }
+
+                            //TODO: Change it to the variant of XamarinMediaManager.
+                            Console.WriteLine($"Icy-Headers: {title} {icyInfo.Url} {artist}");
+                            //return PlaybackMetadata("icy", title = title, url = entry.url, artist = artist);
+                            break;
+                    }
+                }
             }
         }
 
@@ -399,6 +416,7 @@ namespace MediaManager.Platforms.Android.Player
             {
                 //Player.VideoSizeChanged -= Player_VideoSizeChanged;
                 Player.RemoveListener(PlayerEventListener);
+                Player.RemoveMetadataOutput(MetadataOutput);
                 Player.Release();
                 Player = null;
             }
