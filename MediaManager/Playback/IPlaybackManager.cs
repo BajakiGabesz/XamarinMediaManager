@@ -143,5 +143,7 @@ namespace MediaManager.Playback
         event EventHandler<MediaItemEventArgs> MediaItemChanged;
 
         event EventHandler<MediaItemFailedEventArgs> MediaItemFailed;
+
+        event EventHandler<MetadataChangedEventArgs> MetadataChanged;
     }
 }

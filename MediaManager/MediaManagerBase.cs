@@ -400,6 +400,7 @@ namespace MediaManager
         public event EventHandler<MediaItemEventArgs> MediaItemFinished;
         public event EventHandler<MediaItemEventArgs> MediaItemChanged;
         public event EventHandler<MediaItemFailedEventArgs> MediaItemFailed;
+        public event EventHandler<MetadataChangedEventArgs> MetadataChanged;
 
         protected IMediaItem _currentSource;
 
@@ -429,7 +430,10 @@ namespace MediaManager
         }
 
         internal void OnMediaItemFinished(object sender, MediaItemEventArgs e) => MediaItemFinished?.Invoke(sender, e);
-
+        internal void OnMetadataChanged(object sender, MetadataChangedEventArgs e)
+        {
+            MetadataChanged?.Invoke(sender, e);
+        }
         internal void OnPositionChanged(object sender, PositionChangedEventArgs e)
         {
             PositionChanged?.Invoke(sender, e);

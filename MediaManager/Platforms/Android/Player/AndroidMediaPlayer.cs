@@ -21,6 +21,7 @@ using MediaManager.Platforms.Android.Queue;
 using MediaManager.Platforms.Android.Video;
 using MediaManager.Player;
 using MediaManager.Video;
+using MediaItem = MediaManager.Library.MediaItem;
 
 namespace MediaManager.Platforms.Android.Player
 {
@@ -279,7 +280,7 @@ namespace MediaManager.Platforms.Android.Player
             }
         }
 
-        private static void ProcessMetadata(Metadata metadata)
+        private void ProcessMetadata(Metadata metadata)
         {
             for (var i = 0; i < metadata.Length(); i++)
             {
@@ -288,9 +289,8 @@ namespace MediaManager.Platforms.Android.Player
                     switch (entry)
                     {
                         case IcyHeaders icyHeaders:
-                            Console.WriteLine($"Icy-Headers: {icyHeaders.Name} {icyHeaders.Url} {icyHeaders.Genre}");
-                            //TODO: Change it to the variant of XamarinMediaManager.
-                            //return PlaybackMetadata("icy-headers", title = icyHeaders.Name, url = icyHeaders.Url, genre = icyHeaders.Genre);
+                            // Note: General headers not in use.
+                            // Console.WriteLine($"Icy-Headers: Name: {icyHeaders.Name} - Url: {icyHeaders.Url} - Genre: {icyHeaders.Genre}");
                             break;
                         case IcyInfo icyInfo:
                             string? artist;
@@ -307,9 +307,14 @@ namespace MediaManager.Platforms.Android.Player
                                 title = icyInfo.Title;
                             }
 
-                            //TODO: Change it to the variant of XamarinMediaManager.
-                            Console.WriteLine($"Icy-Headers: {title} {icyInfo.Url} {artist}");
-                            //return PlaybackMetadata("icy", title = title, url = entry.url, artist = artist);
+                            Console.WriteLine($"Icy-Info: {artist} - {title} - Url: {icyInfo.Url}");
+
+                            MediaManager?.OnMetadataChanged(null, new MetadataChangedEventArgs(new MediaItem()
+                            {
+                                Artist = artist,
+                                Title = title,
+                                MediaUri = icyInfo.Url
+                            }));
                             break;
                     }
                 }
