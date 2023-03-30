@@ -64,7 +64,7 @@ namespace MediaManager.Platforms.Apple.Player
             playbackBufferFullToken = Player.AddObserver("currentItem.playbackBufferFull", options, PlaybackBufferFullChanged);
             playbackBufferEmptyToken = Player.AddObserver("currentItem.playbackBufferEmpty", options, PlaybackBufferEmptyChanged);
             presentationSizeToken = Player.AddObserver("currentItem.presentationSize", options, PresentationSizeChanged);
-            timedMetaDataToken = Player.AddObserver("currentItem.timedMetadata", options, TimedMetaDataChanged);
+            timedMetaDataToken = Player.AddObserver("currentItem.timedMetadata", options | NSKeyValueObservingOptions.OldNew, TimedMetaDataChanged);
         }
 
         protected virtual void PresentationSizeChanged(NSObservedChange obj)
@@ -78,10 +78,7 @@ namespace MediaManager.Platforms.Apple.Player
 
         protected virtual void TimedMetaDataChanged(NSObservedChange obj)
         {
-            if (MediaManager.Queue.Current?.IsMetadataExtracted != false)
-                return;
-
-            if (obj.NewValue is NSArray array && array.Count > 0)
+            if (obj?.NewValue is NSArray array && array.Count > 0)
             {
                 var avMetadataItem = array.GetItem<AVMetadataItem>(0);
                 if (avMetadataItem != null && !string.IsNullOrEmpty(avMetadataItem.StringValue))
@@ -92,9 +89,20 @@ namespace MediaManager.Platforms.Apple.Player
                     if (split.Length > 1)
                     {
                         MediaManager.Queue.Current.Title = split.LastOrDefault();
+                        MediaManager?.OnMetadataChanged(null, new MetadataChangedEventArgs(new MediaItem()
+                        {
+                            Artist = MediaManager.Queue.Current.Artist,
+                            Title = MediaManager.Queue.Current.Title
+                        }));
+                    }
+                    else
+                    {
+                        MediaManager?.OnMetadataChanged(null, new MetadataChangedEventArgs(new MediaItem()
+                        {
+                            Title = MediaManager.Queue.Current.Artist
+                        }));
                     }
                 }
-                //TODO: Maybe add sending notification here.
             }
         }
 
