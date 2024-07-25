@@ -34,7 +34,7 @@ namespace MediaManager.Platforms.Android.Player
 
         protected string UserAgent { get; set; }
         protected DefaultHttpDataSource.Factory HttpDataSourceFactory { get; set; }
-        public IDataSource.IFactory DataSourceFactory { get; set; }
+        public IDataSourceFactory DataSourceFactory { get; set; }
         public DefaultDashChunkSource.Factory DashChunkSourceFactory { get; set; }
         public DefaultSsChunkSource.Factory SsChunkSourceFactory { get; set; }
 
@@ -198,15 +198,15 @@ namespace MediaManager.Platforms.Android.Player
                 OnMetadataImpl = (Metadata metadata) => ProcessMetadata(metadata)
             };
 
-            Player.AddMetadataOutput(MetadataOutput);
+            //Player.AddMetadataOutput(MetadataOutput);
 
             PlayerEventListener = new PlayerEventListener()
             {
-                OnPlayerErrorImpl = (ExoPlaybackException exception) =>
+                OnPlayerErrorImpl = (PlaybackException exception) =>
                 {
                     MediaManager.OnMediaItemFailed(this, new MediaItemFailedEventArgs(MediaManager.Queue.Current, exception, exception.Message));
                 },
-                OnTracksChangedImpl = (trackGroups, trackSelections) =>
+                OnTracksChangedImpl = (trackGroups) =>
                 {
                     InvokeBeforePlaying(this, new MediaPlayerEventArgs(MediaManager.Queue.Current, this));
 
@@ -265,7 +265,7 @@ namespace MediaManager.Platforms.Android.Player
                 {
                     //TODO: Maybe call event
                 },
-                OnMetadataChangedImpl = (Metadata metadata) =>
+                OnMetadataImpl = (Metadata metadata) =>
                 {
                     ProcessMetadata(metadata);
                 }
@@ -411,7 +411,7 @@ namespace MediaManager.Platforms.Android.Player
 
         public override Task Stop()
         {
-            Player.Stop(true);
+            Player.Stop();
             return Task.CompletedTask;
         }
 
@@ -421,7 +421,7 @@ namespace MediaManager.Platforms.Android.Player
             {
                 //Player.VideoSizeChanged -= Player_VideoSizeChanged;
                 Player.RemoveListener(PlayerEventListener);
-                Player.RemoveMetadataOutput(MetadataOutput);
+                //Player.RemoveMetadataOutput(MetadataOutput);
                 Player.Release();
                 Player = null;
             }

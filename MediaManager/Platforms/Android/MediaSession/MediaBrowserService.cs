@@ -107,23 +107,13 @@ namespace MediaManager.Platforms.Android.MediaSession
         {
             MediaDescriptionAdapter = new MediaDescriptionAdapter();
 
-            // Create notification channel for media controls.
-            //if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-            //{
-            //    var channel = new NotificationChannel(ChannelId, MediaManager.NotificationChannel, NotificationImportance.Low);
-            //    var nm = (NotificationManager)GetSystemService(NotificationService);
-            //    nm.CreateNotificationChannel(channel);
-            //}
-
-            PlayerNotificationManager = new Com.Google.Android.Exoplayer2.UI.PlayerNotificationManager.Builder(
-            	this,
-            	ForegroundNotificationId,
-            	ChannelId,
-            	MediaDescriptionAdapter)
-                .SetChannelNameResourceId(Resource.String.XamarinMediaManagerName)
-                .SetChannelDescriptionResourceId(Resource.String.XamarinMediaManagerDescription)
-                .SetNotificationListener(NotificationListener)
-                .Build();
+            //Create notification channel for media controls.
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            {
+                var channel = new NotificationChannel(ChannelId, MediaManager.NotificationChannel, NotificationImportance.Low);
+                var nm = (NotificationManager)GetSystemService(NotificationService);
+                nm.CreateNotificationChannel(channel);
+            }
 
             //Needed for enabling the notification as a mediabrowser.
             NotificationListener = new NotificationListener
@@ -177,6 +167,7 @@ namespace MediaManager.Platforms.Android.MediaSession
             //Must be called to start the connection
             if (MediaManager.Notification is Notifications.NotificationManager notificationManager)
                 notificationManager.Player = MediaManager.Player;
+
             //PlayerNotificationManager.SetPlayer(MediaManager.AndroidMediaPlayer.Player);
         }
 

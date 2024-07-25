@@ -57,28 +57,28 @@ namespace MediaManager.Platforms.Android.Media
                 case MediaType.Video:
                 case MediaType.Default:
                     return new ProgressiveMediaSource.Factory(MediaManager.AndroidMediaPlayer.DataSourceFactory).CreateMediaSource(BuildMediaItem(mediaDescription));
-                case MediaType.Dash:
-                    if (MediaManager.AndroidMediaPlayer.DashChunkSourceFactory == null)
-                        throw new ArgumentNullException(nameof(AndroidMediaPlayer.DashChunkSourceFactory));
+                //case MediaType.Dash:
+                //    if (MediaManager.AndroidMediaPlayer.DashChunkSourceFactory == null)
+                //        throw new ArgumentNullException(nameof(AndroidMediaPlayer.DashChunkSourceFactory));
 
-                    return new DashMediaSource.Factory(MediaManager.AndroidMediaPlayer.DashChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
-                        .CreateMediaSource(BuildMediaItem(mediaDescription));
-                case MediaType.Hls:
-                    return new HlsMediaSource.Factory(MediaManager.AndroidMediaPlayer.DataSourceFactory)
-                        .SetAllowChunklessPreparation(true)
-                        .CreateMediaSource(BuildMediaItem(mediaDescription));
-                case MediaType.SmoothStreaming:
-                    if (MediaManager.AndroidMediaPlayer.SsChunkSourceFactory == null)
-                        throw new ArgumentNullException(nameof(AndroidMediaPlayer.SsChunkSourceFactory));
+                //    return new DashMediaSourceFactory(MediaManager.AndroidMediaPlayer.DashChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
+                //        .CreateMediaSource(BuildMediaItem(mediaDescription));
+                //case MediaType.Hls:
+                //    return new HlsMediaSourceFactory(MediaManager.AndroidMediaPlayer.DataSourceFactory)
+                //        .SetAllowChunklessPreparation(true)
+                //        .CreateMediaSource(BuildMediaItem(mediaDescription));
+                //case MediaType.SmoothStreaming:
+                //    if (MediaManager.AndroidMediaPlayer.SsChunkSourceFactory == null)
+                //        throw new ArgumentNullException(nameof(AndroidMediaPlayer.SsChunkSourceFactory));
 
-                    return new SsMediaSource.Factory(MediaManager.AndroidMediaPlayer.SsChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
-                        .CreateMediaSource(BuildMediaItem(mediaDescription));
+                //    return new SsMediaSourceFactory(MediaManager.AndroidMediaPlayer.SsChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
+                //        .CreateMediaSource(BuildMediaItem(mediaDescription));
                 default:
                     throw new ArgumentNullException(nameof(mediaType));
             }
         }
 
-        public static Com.Google.Android.Exoplayer2.MediaItem BuildMediaItem(this MediaDescriptionCompat mediaDescription)
+        public static Com.Google.Android.Exoplayer2.MediaItem BuildMediaItem(MediaDescriptionCompat mediaDescription)
         {
             return new Com.Google.Android.Exoplayer2.MediaItem.Builder()
                         .SetTag(mediaDescription)
@@ -97,12 +97,11 @@ namespace MediaManager.Platforms.Android.Media
 
             //It should be better to only set the uri to prevent loading images into memory
             if (!string.IsNullOrEmpty(item?.DisplayImageUri))
-            {
                 description.SetIconUri(global::Android.Net.Uri.Parse(item?.DisplayImageUri));
-            }
             else
             {
-                if (item?.DisplayImage is Bitmap image)
+                var image = item?.DisplayImage as Bitmap;
+                if (image != null)
                     description.SetIconBitmap(image);
             }
 
@@ -116,41 +115,39 @@ namespace MediaManager.Platforms.Android.Media
 
         public static IMediaItem ToMediaItem(this MediaDescriptionCompat mediaDescription)
         {
-            var item = new MediaItem(mediaDescription.MediaUri.ToString())
-            {
-                //item.Advertisement = mediaDescription.
-                //item.Album = mediaDescription.
-                //item.AlbumArt = mediaDescription.
-                //item.AlbumArtist = mediaDescription.
-                //item.AlbumArtUri = mediaDescription.
-                //item.Art = mediaDescription.
-                //item.Artist = mediaDescription.
-                //item.ArtUri = mediaDescription.
-                //item.Author = mediaDescription.
-                //item.Compilation = mediaDescription.
-                //item.Composer = mediaDescription.
-                //item.Date = mediaDescription.
-                //item.DiscNumber = mediaDescription.
-                //item.DisplayDescription = mediaDescription.
-                DisplayImage = mediaDescription.IconBitmap,
-                DisplayImageUri = mediaDescription.IconUri.ToString(),
-                DisplaySubtitle = mediaDescription.Subtitle,
-                DisplayTitle = mediaDescription.Title,
-                //item.DownloadStatus = mediaDescription.
-                //item.Duration = mediaDescription.
-                Extras = mediaDescription.Extras,
-                //item.Genre = mediaDescription.
-                Id = mediaDescription.MediaId,
-                //item.MediaUri = mediaDescription.MediaUri.ToString();
-                //item.NumTracks = mediaDescription.
-                //item.Rating = mediaDescription.
-                Title = mediaDescription.Title,
-                //item.TrackNumber = mediaDescription.
-                //item.UserRating = mediaDescription.
-                //item.Writer = mediaDescription.
-                //item.Year = mediaDescription.
-                IsMetadataExtracted = true
-            };
+            var item = new MediaItem(mediaDescription.MediaUri.ToString());
+            //item.Advertisement = mediaDescription.
+            //item.Album = mediaDescription.
+            //item.AlbumArt = mediaDescription.
+            //item.AlbumArtist = mediaDescription.
+            //item.AlbumArtUri = mediaDescription.
+            //item.Art = mediaDescription.
+            //item.Artist = mediaDescription.
+            //item.ArtUri = mediaDescription.
+            //item.Author = mediaDescription.
+            //item.Compilation = mediaDescription.
+            //item.Composer = mediaDescription.
+            //item.Date = mediaDescription.
+            //item.DiscNumber = mediaDescription.
+            //item.DisplayDescription = mediaDescription.
+            item.DisplayImage = mediaDescription.IconBitmap;
+            item.DisplayImageUri = mediaDescription.IconUri.ToString();
+            item.DisplaySubtitle = mediaDescription.Subtitle;
+            item.DisplayTitle = mediaDescription.Title;
+            //item.DownloadStatus = mediaDescription.
+            //item.Duration = mediaDescription.
+            item.Extras = mediaDescription.Extras;
+            //item.Genre = mediaDescription.
+            item.Id = mediaDescription.MediaId;
+            //item.MediaUri = mediaDescription.MediaUri.ToString();
+            //item.NumTracks = mediaDescription.
+            //item.Rating = mediaDescription.
+            item.Title = mediaDescription.Title;
+            //item.TrackNumber = mediaDescription.
+            //item.UserRating = mediaDescription.
+            //item.Writer = mediaDescription.
+            //item.Year = mediaDescription.
+            item.IsMetadataExtracted = true;
             return item;
         }
 
@@ -200,7 +197,7 @@ namespace MediaManager.Platforms.Android.Media
             return item;
         }
 
-        private static IDataSource.IFactory CreateDataSourceFactory(IMediaItem mediaItem)
+        private static IDataSourceFactory CreateDataSourceFactory(IMediaItem mediaItem)
         {
             //TODO: use own datasource factory that works with stream instead of bytes
             using var memStream = new MemoryStream();
@@ -211,8 +208,9 @@ namespace MediaManager.Platforms.Android.Media
 
             mediaItem.Data.CopyTo(memStream);
             var bytes = memStream.ToArray();
-            var factory = new ByteArrayDataSourceFactory(bytes);
-            return factory;
+            //TODO: Fix
+            //var factory = new ByteArrayDataSourceFactory(bytes);
+            return null;
         }
     }
 }

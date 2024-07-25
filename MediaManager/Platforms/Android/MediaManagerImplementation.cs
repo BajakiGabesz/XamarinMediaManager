@@ -25,6 +25,8 @@ namespace MediaManager
     [global::Android.Runtime.Preserve(AllMembers = true)]
     public class MediaManagerImplementation : MediaManagerBase, IMediaManager<SimpleExoPlayer>
     {
+        public string NotificationChannel { get; set; } = "MediaManager";
+
         public MediaManagerImplementation()
         {
             IsInitialized = false;
