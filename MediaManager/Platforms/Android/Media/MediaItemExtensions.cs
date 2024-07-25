@@ -1,12 +1,10 @@
 ﻿using Android.Graphics;
-using Android.Media;
 using Android.OS;
 using Android.Support.V4.Media;
 using Com.Google.Android.Exoplayer2.Source;
-using Com.Google.Android.Exoplayer2.Source.Dash;
 using Com.Google.Android.Exoplayer2.Source.Hls;
-using Com.Google.Android.Exoplayer2.Source.Smoothstreaming;
 using Com.Google.Android.Exoplayer2.Upstream;
+using Java.Lang;
 using MediaManager.Library;
 using MediaManager.Platforms.Android.Player;
 using DownloadStatus = MediaManager.Library.DownloadStatus;
@@ -57,16 +55,30 @@ namespace MediaManager.Platforms.Android.Media
                 case MediaType.Video:
                 case MediaType.Default:
                     return new ProgressiveMediaSource.Factory(MediaManager.AndroidMediaPlayer.DataSourceFactory).CreateMediaSource(BuildMediaItem(mediaDescription));
-                //case MediaType.Dash:
-                //    if (MediaManager.AndroidMediaPlayer.DashChunkSourceFactory == null)
-                //        throw new ArgumentNullException(nameof(AndroidMediaPlayer.DashChunkSourceFactory));
+                /*case MediaType.Dash:
+                    if (MediaManager.AndroidMediaPlayer.DashChunkSourceFactory == null)
+                        throw new ArgumentNullException(nameof(AndroidMediaPlayer.DashChunkSourceFactory));
 
-                //    return new DashMediaSourceFactory(MediaManager.AndroidMediaPlayer.DashChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
-                //        .CreateMediaSource(BuildMediaItem(mediaDescription));
-                //case MediaType.Hls:
-                //    return new HlsMediaSourceFactory(MediaManager.AndroidMediaPlayer.DataSourceFactory)
-                //        .SetAllowChunklessPreparation(true)
-                //        .CreateMediaSource(BuildMediaItem(mediaDescription));
+                    return new DashMediaSourceFactory(MediaManager.AndroidMediaPlayer.DashChunkSourceFactory, MediaManager.AndroidMediaPlayer.DataSourceFactory)
+                        .CreateMediaSource(BuildMediaItem(mediaDescription));*/
+                case MediaType.Hls:
+                    // Get HlsMediaSource class
+                    var hlsMediaSourceClass = Class.ForName("com.google.android.exoplayer2.source.hls.HlsMediaSource");
+                    // Get the Factory inner class
+                    var factoryClass = Class.ForName("com.google.android.exoplayer2.source.hls.HlsMediaSource$Factory");
+                    // Get the constructor of Factory that takes DataSource.Factory as a parameter
+                    var constructor = factoryClass.GetConstructor(Class.ForName("com.google.android.exoplayer2.upstream.DataSource$Factory"));
+                    // Create an instance of Factory
+                    var factoryInstance = constructor.NewInstance((Java.Lang.Object)MediaManager.AndroidMediaPlayer.DataSourceFactory);
+                    // Get the setAllowChunklessPreparation method
+                    var setAllowChunklessPreparationMethod = factoryClass.GetMethod("setAllowChunklessPreparation", Java.Lang.Boolean.Type);
+                    // Invoke setAllowChunklessPreparation(true) on the factory instance
+                    factoryInstance = setAllowChunklessPreparationMethod.Invoke(factoryInstance, true);
+                    // Get the createMediaSource method
+                    var createMediaSourceMethod = factoryClass.GetMethod("createMediaSource", Class.ForName("com.google.android.exoplayer2.MediaItem"));
+                    // Invoke createMediaSource with the mediaItem
+                    var mediaSource = (IMediaSource)createMediaSourceMethod.Invoke(factoryInstance, BuildMediaItem(mediaDescription));
+                    return mediaSource;
                 //case MediaType.SmoothStreaming:
                 //    if (MediaManager.AndroidMediaPlayer.SsChunkSourceFactory == null)
                 //        throw new ArgumentNullException(nameof(AndroidMediaPlayer.SsChunkSourceFactory));
