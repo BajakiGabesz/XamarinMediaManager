@@ -128,18 +128,25 @@ namespace MediaManager.Platforms.Android.MediaSession
                 },
                 OnNotificationPostedImpl = (notificationId, notification, ongoing) =>
                 {
-                    if (ongoing && !IsForeground)
+                    try
                     {
-                        ContextCompat.StartForegroundService(ApplicationContext, new Intent(ApplicationContext, MediaBrowserManager.ServiceType));
-                        if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+                        if (ongoing && !IsForeground)
                         {
-                            StartForeground(notificationId, notification, ForegroundService.TypeMediaPlayback);
+                            ContextCompat.StartForegroundService(ApplicationContext, new Intent(ApplicationContext, MediaBrowserManager.ServiceType));
+                            if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+                            {
+                                StartForeground(notificationId, notification, ForegroundService.TypeMediaPlayback);
+                            }
+                            else
+                            {
+                                StartForeground(notificationId, notification);
+                            }
+                            IsForeground = true;
                         }
-                        else
-                        {
-                            StartForeground(notificationId, notification);
-                        }
-                        IsForeground = true;
+                    }
+                    catch (ForegroundServiceStartNotAllowedException ex)
+                    {
+                        StopSelf();
                     }
                 }
             };
